@@ -105,16 +105,18 @@ def RGUI():
     lbl_title.grid(column=0, row=1, columnspan=2)
 
     btn_detailed = tk.Button(text="Detailed View",
-                             height=2, width=14, command=lambda: showQuery())
+                             height=2, width=14, command=lambda: detailedView())
     btn_detailed.grid(column=0, row=2, pady=5, padx=40, columnspan=2)
 
-    btn_detailed = tk.Button(text="Movies by Year", height=2, width=14)
-    btn_detailed.grid(column=0, row=3, pady=5, padx=40, columnspan=2)
+    btn_year = tk.Button(text="Movies by Year", height=2,
+                         width=14, command=lambda: yearView())
+    btn_year.grid(column=0, row=3, pady=5, padx=40, columnspan=2)
 
-    btn_detailed = tk.Button(text="Movies by Director", height=2, width=14)
-    btn_detailed.grid(column=0, row=4, pady=5, padx=40, columnspan=2)
+    btn_director = tk.Button(text="Movies by Director",
+                             height=2, width=14, command=lambda: directorView())
+    btn_director.grid(column=0, row=4, pady=5, padx=40, columnspan=2)
 
-    def showQuery():
+    def detailedView():
         # Creating the root window
         root = Tk(className="Result")
 
@@ -138,9 +140,106 @@ def RGUI():
         results = queryHandler("""SELECT *FROM Movies m """)
 
         # Insert elements into the listbox
+        line = "  ", "Id", " " * (4-2), "Title", " " * (42-5), "Character", " " * (
+            32-9), "Premiere", " " * (15-8), "Director"
+        listbox.insert(END, "".join(line))
         for values in results:
-            line = str(values[0]), " " * (4-len(str(values[0]))), values[1], " " * (42-len(str(values[1]))), values[2], " " * (
+            line = "  ", str(values[0]), " " * (4-len(str(values[0]))), values[1], " " * (42-len(str(values[1]))), values[2], " " * (
                 32-len(str(values[2]))), values[3], " " * (15-len(str(values[3]))), values[4]
+            listbox.insert(END, "".join(line))
+
+        # Attaching Listbox to Scrollbar
+        # Since we need to have a vertical
+        # scroll we use yscrollcommand
+        listbox.config(yscrollcommand=scrollbar.set, font='TkFixedFont')
+
+        # setting scrollbar command parameter
+        # to listbox.yview method its yview because
+        # we need to have a vertical view
+        scrollbar.config(command=listbox.yview)
+
+        root.mainloop()
+
+    def yearView():
+        # Creating the root window
+        root = Tk(className="Result")
+
+        # Creating a Listbox and
+        # attaching it to root window
+        listbox = Listbox(root, width=40, height=20)
+
+        # Adding Listbox to the left
+        # side of root window
+        listbox.pack(side=LEFT, fill=BOTH)
+
+        # Creating a Scrollbar and
+        # attaching it to root window
+        scrollbar = Scrollbar(root)
+
+        # Adding Scrollbar to the right
+        # side of root window
+        scrollbar.pack(side=RIGHT, fill=BOTH)
+
+        # Fetch results from DB
+        results = queryHandler("""SELECT COUNT(Id) as cantidad,strftime('%Y', Premiere) as dat
+FROM Movies m 
+GROUP BY dat
+ORDER BY cantidad desc""")
+
+        # Insert elements into the listbox
+        line = "  ", "Movies", " " * (10-6), "Year",
+        listbox.insert(END, "".join(line))
+
+        for values in results:
+            line = "  ", str(values[0]), " " * (10-len(str(values[0]))
+                                                ), values[1]
+            listbox.insert(END, "".join(line))
+
+        # Attaching Listbox to Scrollbar
+        # Since we need to have a vertical
+        # scroll we use yscrollcommand
+        listbox.config(yscrollcommand=scrollbar.set, font='TkFixedFont')
+
+        # setting scrollbar command parameter
+        # to listbox.yview method its yview because
+        # we need to have a vertical view
+        scrollbar.config(command=listbox.yview)
+
+        root.mainloop()
+
+    def directorView():
+        # Creating the root window
+        root = Tk(className="Result")
+
+        # Creating a Listbox and
+        # attaching it to root window
+        listbox = Listbox(root, width=40, height=20)
+
+        # Adding Listbox to the left
+        # side of root window
+        listbox.pack(side=LEFT, fill=BOTH)
+
+        # Creating a Scrollbar and
+        # attaching it to root window
+        scrollbar = Scrollbar(root)
+
+        # Adding Scrollbar to the right
+        # side of root window
+        scrollbar.pack(side=RIGHT, fill=BOTH)
+
+        # Fetch results from DB
+        results = queryHandler("""SELECT COUNT(Id) as cantidad, Director 
+FROM Movies m 
+GROUP BY Director 
+ORDER BY cantidad desc""")
+
+        # Insert elements into the listbox
+        line = "  ", "Movies", " " * (10-6), "Director",
+        listbox.insert(END, "".join(line))
+
+        for values in results:
+            line = "  ", str(values[0]), " " * (10-len(str(values[0]))
+                                                ), values[1]
             listbox.insert(END, "".join(line))
 
         # Attaching Listbox to Scrollbar
