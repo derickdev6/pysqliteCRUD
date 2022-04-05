@@ -22,7 +22,7 @@ def insertHandler(request):
     print("DB Connected --------------------------------")
     cursor.execute(request)
     sqliteConnection.commit()
-    print("Record inserted successfully ", cursor.rowcount)
+    print("Record inserted/deleted successfully ", cursor.rowcount)
     cursor.close()
     if sqliteConnection:
         sqliteConnection.close()
@@ -33,7 +33,7 @@ def main():
     for widget in root.winfo_children():
         widget.destroy()
 
-    lbl_title = tk.Label(text="Bienvenido", height=4, width=30)
+    lbl_title = tk.Label(text="Main Menu", height=4, width=30)
     lbl_title.grid(column=2, row=1)
 
     btn_create = tk.Button(text="Create", height=2,
@@ -44,7 +44,8 @@ def main():
     btn_read.grid(column=2, row=3, pady=5, padx=40)
     btn_update = tk.Button(text="Update", height=2, width=14)
     btn_update.grid(column=2, row=4, pady=5, padx=40)
-    btn_delete = tk.Button(text="Delete", height=2, width=14)
+    btn_delete = tk.Button(text="Delete", height=2,
+                           width=14, command=lambda: DGUI())
     btn_delete.grid(column=2, row=5, pady=5, padx=40)
 
 
@@ -182,7 +183,7 @@ def RGUI():
 
         # Fetch results from DB
         results = queryHandler("""SELECT COUNT(Id) as cantidad,strftime('%Y', Premiere) as dat
-FROM Movies m 
+FROM Movies m
 GROUP BY dat
 ORDER BY cantidad desc""")
 
@@ -228,9 +229,9 @@ ORDER BY cantidad desc""")
         scrollbar.pack(side=RIGHT, fill=BOTH)
 
         # Fetch results from DB
-        results = queryHandler("""SELECT COUNT(Id) as cantidad, Director 
-FROM Movies m 
-GROUP BY Director 
+        results = queryHandler("""SELECT COUNT(Id) as cantidad, Director
+FROM Movies m
+GROUP BY Director
 ORDER BY cantidad desc""")
 
         # Insert elements into the listbox
@@ -253,6 +254,37 @@ ORDER BY cantidad desc""")
         scrollbar.config(command=listbox.yview)
 
         root.mainloop()
+
+
+def DGUI():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
+    btn_back.grid(column=0, row=0)
+    lbl_title = tk.Label(text="Delete Movie", height=4, width=30)
+    lbl_title.grid(column=0, row=1, columnspan=2)
+
+    # queryBox = tk.Text(width=30, height=20)
+    # queryBox.grid(column=0, row=2, columnspan=2)
+
+    lbl_id = tk.Label(text="Id", height=2, width=10)
+    lbl_id.grid(column=0, row=2, padx=10)
+    ent_id = tk.Entry()
+    ent_id.grid(column=1, row=2, padx=10, sticky="w")
+
+    btn_create = tk.Button(text="Delete by Id", command=lambda: [insertHandler(
+        f"""DELETE FROM Movies WHERE Id = {ent_id.get()}"""), ent_id.delete(0, 100)])
+    btn_create.grid(column=0, row=3, columnspan=2)
+
+    lbl_title = tk.Label(text="Title", height=2, width=10)
+    lbl_title.grid(column=0, row=4, padx=10)
+    ent_title = tk.Entry()
+    ent_title.grid(column=1, row=4, padx=10, sticky="w")
+
+    btn_create = tk.Button(text="Delete by Title", command=lambda: [insertHandler(
+        f"""DELETE FROM Movies WHERE Title = '{ent_title.get()}'"""), ent_title.delete(0, 100)])
+    btn_create.grid(column=0, row=5, columnspan=2)
 
 
 if __name__ == '__main__':
