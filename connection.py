@@ -3,11 +3,11 @@ import sqlite3
 
 def main():
     try:
-        sqliteConnection = sqlite3.connect('chinook.db')
+        sqliteConnection = sqlite3.connect('hwood.db')
         cursor = sqliteConnection.cursor()
         print("Database created and Successfully Connected to SQLite")
 
-        sqlite_select_query = """SELECT LastName , Title FROM employees e  """
+        sqlite_select_query = """SELECT * FROM Movies m """
         cursor.execute(sqlite_select_query)
         records = cursor.fetchall()
         print("Total rows are:  ", len(records))
@@ -16,7 +16,7 @@ def main():
         #     print("Name: ", row[0])
         #     print("Title: ", row[1])
         #     print("\n")
-        print(records)
+        print(records[0][1])
 
         cursor.close()
     except sqlite3.Error as exception:
