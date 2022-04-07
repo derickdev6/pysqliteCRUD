@@ -1,4 +1,5 @@
 import sqlite3
+import time
 import tkinter as tk
 from tkinter import *
 
@@ -9,7 +10,10 @@ def searchHandler(request):
     cursor = sqliteConnection.cursor()
     # Print statement and execution
     print("-----------------------------Executing search on hwood.db\n" + request)
-    cursor.execute(request)
+    try:
+        cursor.execute(request)
+    except Exception as e:
+        print("Error executing searchHandler")
     records = cursor.fetchall()
     if len(records) != 0:
         print("Records found: " + str(len(records)))
@@ -30,9 +34,12 @@ def modifyHandler(request):
     # Print statement and execution
     print("-----------------------------Executing " +
           request.split()[0] + " on hwood.db\n" + request)
-    cursor.execute(request)
+    try:
+        cursor.execute(request)
+    except Exception as e:
+        print("Error executing modifyHandler")
     sqliteConnection.commit()
-    if (cursor.rowcount != 0):
+    if (cursor.rowcount > 0):
         print("Record inserted/deleted/updated successfully ", cursor.rowcount)
     else:
         print("Record NOT inserted/deleted/updated")
@@ -40,7 +47,7 @@ def modifyHandler(request):
     if sqliteConnection:
         sqliteConnection.close()
         print("-----------------------------DB Disconnected")
-    return cursor.rowcount != 0
+    return cursor.rowcount > 0
 
 
 def main():
@@ -70,8 +77,12 @@ def CGUI():
 
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
+
     lbl_title = tk.Label(text="Create new Movie", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
+
+    lbl_checker = tk.Label(text="∆")
+    lbl_checker.grid(column=1, row=0, sticky="e")
 
     lbl_id = tk.Label(text="Id", height=2, width=10)
     lbl_id.grid(column=0, row=2, padx=10)
@@ -98,13 +109,17 @@ def CGUI():
     ent_director = tk.Entry()
     ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Create", command=lambda: [modifyHandler(
-        f"""INSERT INTO Movies (Id, Title, \"Character\", Premiere, Director)
-VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}', '{ent_premiere.get()}', '{ent_director.get()}')"""),
-        ent_id.delete(0, 100), ent_title.delete(0, 100),
-        ent_character.delete(0, 100), ent_premiere.delete(0, 100),
-        ent_director.delete(0, 100)])
+    btn_create = tk.Button(text="Create", command=lambda: [newMovie(), ent_id.delete(0, END), ent_title.delete(
+        0, END), ent_character.delete(0, END), ent_premiere.delete(0, END), ent_director.delete(0, END)])
     btn_create.grid(column=0, row=7, columnspan=2)
+
+    def newMovie():
+        req = f"""INSERT INTO Movies (Id, Title, \"Character\", Premiere, Director)
+VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}', '{ent_premiere.get()}', '{ent_director.get()}')"""
+        if (modifyHandler(req)):
+            lbl_checker.configure(fg="green")
+        else:
+            lbl_checker.configure(fg="red")
 
 
 def RGUI():
@@ -113,6 +128,7 @@ def RGUI():
 
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
+
     lbl_title = tk.Label(text="Reading options", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
 
@@ -273,9 +289,13 @@ def UGUI():
 
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
+
     lbl_title = tk.Label(
         text="Update Movie\nFirst, select a movie to update", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
+
+    lbl_checker = tk.Label(text="∆")
+    lbl_checker.grid(column=1, row=0, sticky="e")
 
     lbl_id = tk.Label(text="Id", height=2, width=10)
     lbl_id.grid(column=0, row=2, padx=10)
@@ -301,7 +321,9 @@ def UGUI():
         if (len(search) != 0):
             update(search[0], type, check)
         else:
-            UGUI()
+            ent_title.delete(0, END)
+            ent_id.delete(0, END)
+            lbl_checker.configure(fg="red")
 
     def update(search, type, check):
         for widget in root.winfo_children():
@@ -313,10 +335,13 @@ def UGUI():
         lbl_title = tk.Label(text="Updating Movie", height=4, width=30)
         lbl_title.grid(column=0, row=1, columnspan=2)
 
+        lbl_checker = tk.Label(text="∆")
+        lbl_checker.grid(column=1, row=0, sticky="e")
+
         lbl_id = tk.Label(text="Id", height=2, width=10)
         lbl_id.grid(column=0, row=2, padx=10)
-        ent_id = tk.Label(text=search[0], height=2)
-        ent_id.grid(column=1, row=2, padx=10, sticky="w")
+        lbl_idHolder = tk.Label(text=search[0], height=2)
+        lbl_idHolder.grid(column=1, row=2, padx=10, sticky="w")
 
         lbl_title = tk.Label(text="Title", height=2, width=10)
         lbl_title.grid(column=0, row=3, padx=10)
@@ -342,14 +367,28 @@ def UGUI():
         ent_director.insert(END, search[4])
         ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
-        btn_update = tk.Button(text="Update", command=lambda: [modifyHandler(
-            f"""UPDATE Movies 
+        btn_update = tk.Button(text="Update", command=lambda: updateMovie())
+        btn_update.grid(column=0, row=7, columnspan=2)
+
+        def updateMovie():
+            if type == "Id":
+                req = f"""UPDATE Movies 
 SET Title = '{ent_title.get()}',
 "Character" = '{ent_character.get()}',
 Premiere = '{ent_premiere.get()}',
 Director = '{ent_director.get()}'
-WHERE {type} = {check}"""), UGUI()])
-        btn_update.grid(column=0, row=7, columnspan=2)
+WHERE {type} = {check}"""
+            else:
+                req = f"""UPDATE Movies 
+SET Title = '{ent_title.get()}',
+"Character" = '{ent_character.get()}',
+Premiere = '{ent_premiere.get()}',
+Director = '{ent_director.get()}'
+WHERE {type} = '{check}'"""
+            if (modifyHandler(req)):
+                UGUI()
+            else:
+                lbl_checker.configure(fg="red")
 
 
 def DGUI():
@@ -358,26 +397,40 @@ def DGUI():
 
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
+
     lbl_title = tk.Label(text="Delete Movie", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
+
+    lbl_checker = tk.Label(text="∆")
+    lbl_checker.grid(column=1, row=0, sticky="e")
 
     lbl_id = tk.Label(text="Id", height=2, width=10)
     lbl_id.grid(column=0, row=2, padx=10)
     ent_id = tk.Entry()
     ent_id.grid(column=1, row=2, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Delete by Id", command=lambda: [modifyHandler(
-        f"""DELETE FROM Movies WHERE Id = {ent_id.get()}"""), ent_id.delete(0, 100)])
-    btn_create.grid(column=0, row=3, columnspan=2)
+    btn_delId = tk.Button(text="Delete by Id", command=lambda: [
+                          deleteMovie("Id", ent_id.get()), ent_id.delete(0, END)])
+    btn_delId.grid(column=0, row=3, columnspan=2)
 
     lbl_title = tk.Label(text="Title", height=2, width=10)
     lbl_title.grid(column=0, row=4, padx=10)
     ent_title = tk.Entry()
     ent_title.grid(column=1, row=4, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Delete by Title", command=lambda: [modifyHandler(
-        f"""DELETE FROM Movies WHERE Title = '{ent_title.get()}'"""), ent_title.delete(0, 100)])
-    btn_create.grid(column=0, row=5, columnspan=2)
+    btn_delTitle = tk.Button(text="Delete by Title", command=lambda: [
+                             deleteMovie("Title", ent_title.get()), ent_title.delete(0, END)])
+    btn_delTitle.grid(column=0, row=5, columnspan=2)
+
+    def deleteMovie(type, check):
+        if type == "Id":
+            req = f"""DELETE FROM Movies WHERE {type} = {check}"""
+        else:
+            req = f"""DELETE FROM Movies WHERE {type} = '{check}'"""
+        if (modifyHandler(req)):
+            lbl_checker.configure(fg="green")
+        else:
+            lbl_checker.configure(fg="red")
 
 
 if __name__ == '__main__':
