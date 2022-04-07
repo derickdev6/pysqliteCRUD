@@ -42,7 +42,8 @@ def main():
     btn_read = tk.Button(text="Read", height=2, width=14,
                          command=lambda: RGUI())
     btn_read.grid(column=2, row=3, pady=5, padx=40)
-    btn_update = tk.Button(text="Update", height=2, width=14)
+    btn_update = tk.Button(text="Update", height=2,
+                           width=14, command=lambda: UGUI())
     btn_update.grid(column=2, row=4, pady=5, padx=40)
     btn_delete = tk.Button(text="Delete", height=2,
                            width=14, command=lambda: DGUI())
@@ -57,9 +58,6 @@ def CGUI():
     btn_back.grid(column=0, row=0)
     lbl_title = tk.Label(text="Create new Movie", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
-
-    # queryBox = tk.Text(width=30, height=20)
-    # queryBox.grid(column=0, row=2, columnspan=2)
 
     lbl_id = tk.Label(text="Id", height=2, width=10)
     lbl_id.grid(column=0, row=2, padx=10)
@@ -256,6 +254,91 @@ ORDER BY cantidad desc""")
         root.mainloop()
 
 
+def UGUI():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
+    btn_back.grid(column=0, row=0)
+    lbl_title = tk.Label(
+        text="Update Movie\nFirst, select a movie to update", height=4, width=30)
+    lbl_title.grid(column=0, row=1, columnspan=2)
+
+    lbl_id = tk.Label(text="Id", height=2, width=10)
+    lbl_id.grid(column=0, row=2, padx=10)
+    ent_id = tk.Entry()
+    ent_id.grid(column=1, row=2, padx=10, sticky="w")
+
+    btn_create = tk.Button(text="Select by Id",
+                           command=lambda: verify("Id", ent_id.get()))
+    btn_create.grid(column=0, row=3, columnspan=2)
+
+    lbl_title = tk.Label(text="Title", height=2, width=10)
+    lbl_title.grid(column=0, row=4, padx=10)
+    ent_title = tk.Entry()
+    ent_title.grid(column=1, row=4, padx=10, sticky="w")
+
+    btn_create = tk.Button(text="Select by Title",
+                           command=lambda: verify("Title", ent_title.get()))
+    btn_create.grid(column=0, row=5, columnspan=2)
+
+    def verify(type, check):
+        search = queryHandler(
+            f"""Select * FROM Movies WHERE {type} = '{check}'""")
+        if (len(search) != 0):
+            update(search[0], type, check)
+        else:
+            UGUI()
+
+    def update(search, type, check):
+        for widget in root.winfo_children():
+            widget.destroy()
+
+        btn_back = tk.Button(text="<", height=1, width=1,
+                             command=lambda: UGUI())
+        btn_back.grid(column=0, row=0)
+        lbl_title = tk.Label(text="Updating Movie", height=4, width=30)
+        lbl_title.grid(column=0, row=1, columnspan=2)
+
+        lbl_id = tk.Label(text="Id", height=2, width=10)
+        lbl_id.grid(column=0, row=2, padx=10)
+        ent_id = tk.Label(text=search[0], height=2)
+        ent_id.grid(column=1, row=2, padx=10, sticky="w")
+
+        lbl_title = tk.Label(text="Title", height=2, width=10)
+        lbl_title.grid(column=0, row=3, padx=10)
+        ent_title = tk.Entry()
+        ent_title.insert(END, search[1])
+        ent_title.grid(column=1, row=3, padx=10, sticky="w")
+
+        lbl_character = tk.Label(text="Character", height=2, width=10)
+        lbl_character.grid(column=0, row=4)
+        ent_character = tk.Entry()
+        ent_character.insert(END, search[2])
+        ent_character.grid(column=1, row=4, padx=10, sticky="w")
+
+        lbl_premiere = tk.Label(text="Premiere", height=2, width=10)
+        lbl_premiere.grid(column=0, row=5)
+        ent_premiere = tk.Entry()
+        ent_premiere.insert(END, search[3])
+        ent_premiere.grid(column=1, row=5, padx=10, sticky="w")
+
+        lbl_director = tk.Label(text="Director", height=2, width=10)
+        lbl_director.grid(column=0, row=6)
+        ent_director = tk.Entry()
+        ent_director.insert(END, search[4])
+        ent_director.grid(column=1, row=6, padx=10, sticky="w")
+
+        btn_update = tk.Button(text="Update", command=lambda: [insertHandler(
+            f"""UPDATE Movies 
+SET Title = '{ent_title.get()}',
+"Character" = '{ent_character.get()}',
+Premiere = '{ent_premiere.get()}',
+Director = '{ent_director.get()}'
+WHERE {type} = {check}"""), UGUI()])
+        btn_update.grid(column=0, row=7, columnspan=2)
+
+
 def DGUI():
     for widget in root.winfo_children():
         widget.destroy()
@@ -264,9 +347,6 @@ def DGUI():
     btn_back.grid(column=0, row=0)
     lbl_title = tk.Label(text="Delete Movie", height=4, width=30)
     lbl_title.grid(column=0, row=1, columnspan=2)
-
-    # queryBox = tk.Text(width=30, height=20)
-    # queryBox.grid(column=0, row=2, columnspan=2)
 
     lbl_id = tk.Label(text="Id", height=2, width=10)
     lbl_id.grid(column=0, row=2, padx=10)
