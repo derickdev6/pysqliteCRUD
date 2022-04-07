@@ -46,34 +46,42 @@ def modifyHandler(request):
     if sqliteConnection:
         sqliteConnection.close()
         print("-----------------------------DB Disconnected")
+    # Returns boolean indicating success or failure
     return cursor.rowcount > 0
 
 
 def main():
+    # Cleaning window
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Labels and buttons
     lbl_title = tk.Label(text="Main Menu", height=4, width=30)
     lbl_title.grid(column=2, row=1)
 
     btn_create = tk.Button(text="Create", height=2,
                            width=14, command=lambda: CGUI())
     btn_create.grid(column=2, row=2, pady=5, padx=40)
-    btn_read = tk.Button(text="Read", height=2, width=14,
-                         command=lambda: RGUI())
+
+    btn_read = tk.Button(text="Read", height=2,
+                         width=14, command=lambda: RGUI())
     btn_read.grid(column=2, row=3, pady=5, padx=40)
+
     btn_update = tk.Button(text="Update", height=2,
                            width=14, command=lambda: UGUI())
     btn_update.grid(column=2, row=4, pady=5, padx=40)
+
     btn_delete = tk.Button(text="Delete", height=2,
                            width=14, command=lambda: DGUI())
     btn_delete.grid(column=2, row=5, pady=5, padx=40)
 
 
 def CGUI():
+    # Cleaning window
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Labels and entries
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
 
@@ -108,10 +116,12 @@ def CGUI():
     ent_director = tk.Entry()
     ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
+    # Create new Movie button
     btn_create = tk.Button(text="Create", command=lambda: [newMovie(), ent_id.delete(0, END), ent_title.delete(
         0, END), ent_character.delete(0, END), ent_premiere.delete(0, END), ent_director.delete(0, END)])
     btn_create.grid(column=0, row=7, columnspan=2)
 
+    # New movie function, checker color updated
     def newMovie():
         req = f"""INSERT INTO Movies (Id, Title, \"Character\", Premiere, Director)
 VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}', '{ent_premiere.get()}', '{ent_director.get()}')"""
@@ -122,9 +132,11 @@ VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}', '{ent_prem
 
 
 def RGUI():
+    # Cleaning window
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Labels and buttons
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
 
@@ -143,6 +155,7 @@ def RGUI():
                              height=2, width=14, command=lambda: directorView())
     btn_director.grid(column=0, row=4, pady=5, padx=40, columnspan=2)
 
+    # Functions for each button/view
     def detailedView():
         # Creating the root window
         root = Tk(className="Result")
@@ -283,9 +296,11 @@ ORDER BY cantidad desc""")
 
 
 def UGUI():
+    # Cleaning window
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Labels entries and buttons
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
 
@@ -314,6 +329,9 @@ def UGUI():
                            command=lambda: verify("Title", ent_title.get()))
     btn_create.grid(column=0, row=5, columnspan=2)
 
+    # verify function, searches for row with Id or Title
+    # runs update function if exists
+    # else clears entries and updates checker color
     def verify(type, check):
         search = searchHandler(
             f"""Select * FROM Movies WHERE {type} = '{check}'""")
@@ -324,10 +342,13 @@ def UGUI():
             ent_id.delete(0, END)
             lbl_checker.configure(fg="red")
 
+    # Creates new window
     def update(search, type, check):
+        # Cleaning window
         for widget in root.winfo_children():
             widget.destroy()
 
+        # Labels and entries
         btn_back = tk.Button(text="<", height=1, width=1,
                              command=lambda: UGUI())
         btn_back.grid(column=0, row=0)
@@ -366,19 +387,15 @@ def UGUI():
         ent_director.insert(END, search[4])
         ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
+        # Update button, throws updateMovie function
         btn_update = tk.Button(text="Update", command=lambda: updateMovie())
         btn_update.grid(column=0, row=7, columnspan=2)
 
+        # Movie exists, so no further check is necessary
+        # Updates row(s) and updates checker color if error is found
+        # Else goes back to Update view
         def updateMovie():
-            if type == "Id":
-                req = f"""UPDATE Movies 
-SET Title = '{ent_title.get()}',
-"Character" = '{ent_character.get()}',
-Premiere = '{ent_premiere.get()}',
-Director = '{ent_director.get()}'
-WHERE {type} = {check}"""
-            else:
-                req = f"""UPDATE Movies 
+            req = f"""UPDATE Movies 
 SET Title = '{ent_title.get()}',
 "Character" = '{ent_character.get()}',
 Premiere = '{ent_premiere.get()}',
@@ -391,9 +408,11 @@ WHERE {type} = '{check}'"""
 
 
 def DGUI():
+    # Cleaning window
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Labels entries and buttons
     btn_back = tk.Button(text="<", height=1, width=1, command=lambda: main())
     btn_back.grid(column=0, row=0)
 
@@ -417,15 +436,14 @@ def DGUI():
     ent_title = tk.Entry()
     ent_title.grid(column=1, row=4, padx=10, sticky="w")
 
+    # Delete button throws deleteMovie function and clears entries
     btn_delTitle = tk.Button(text="Delete by Title", command=lambda: [
                              deleteMovie("Title", ent_title.get()), ent_title.delete(0, END)])
     btn_delTitle.grid(column=0, row=5, columnspan=2)
 
+    # Executes req and updates checker color
     def deleteMovie(type, check):
-        if type == "Id":
-            req = f"""DELETE FROM Movies WHERE {type} = {check}"""
-        else:
-            req = f"""DELETE FROM Movies WHERE {type} = '{check}'"""
+        req = f"""DELETE FROM Movies WHERE {type} = '{check}'"""
         if (modifyHandler(req)):
             lbl_checker.configure(fg="green")
         else:
