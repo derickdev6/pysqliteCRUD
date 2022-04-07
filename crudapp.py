@@ -157,16 +157,20 @@ def RGUI():
 
     # Functions for each button/view
     def detailedView():
-        # Creating the root window
-        root = Tk(className="Result")
-
+        # Clears possible listbox and scrollbar
+        lista = []
+        for widget in root.winfo_children():
+            lista.append(widget)
+        if(len(lista) > 5):
+            lista[5].destroy()
+            lista[6].destroy()
         # Creating a Listbox and
         # attaching it to root window
-        listbox = Listbox(root, width=120, height=50)
+        listbox = Listbox(root, width=120, height=40)
 
         # Adding Listbox to the left
         # side of root window
-        listbox.pack(side=LEFT, fill=BOTH)
+        listbox.grid(row=2, column=2, rowspan=5)
 
         # Creating a Scrollbar and
         # attaching it to root window
@@ -174,7 +178,7 @@ def RGUI():
 
         # Adding Scrollbar to the right
         # side of root window
-        scrollbar.pack(side=RIGHT, fill=BOTH)
+        scrollbar.grid(row=2, column=3, sticky="ns", rowspan=5)
 
         # Fetch results from DB
         results = searchHandler("""SELECT *FROM Movies m """)
@@ -198,19 +202,21 @@ def RGUI():
         # we need to have a vertical view
         scrollbar.config(command=listbox.yview)
 
-        root.mainloop()
-
     def yearView():
-        # Creating the root window
-        root = Tk(className="Result")
-
+        # Clears possible listbox and scrollbar
+        lista = []
+        for widget in root.winfo_children():
+            lista.append(widget)
+        if(len(lista) > 5):
+            lista[5].destroy()
+            lista[6].destroy()
         # Creating a Listbox and
         # attaching it to root window
-        listbox = Listbox(root, width=40, height=20)
+        listbox = Listbox(root, width=30, height=20)
 
         # Adding Listbox to the left
         # side of root window
-        listbox.pack(side=LEFT, fill=BOTH)
+        listbox.grid(row=2, column=2, rowspan=10)
 
         # Creating a Scrollbar and
         # attaching it to root window
@@ -218,7 +224,8 @@ def RGUI():
 
         # Adding Scrollbar to the right
         # side of root window
-        scrollbar.pack(side=RIGHT, fill=BOTH)
+
+        scrollbar.grid(row=2, column=3, sticky="ns", rowspan=10)
 
         # Fetch results from DB
         results = searchHandler("""SELECT COUNT(Id) as cantidad,strftime('%Y', Premiere) as dat
@@ -245,19 +252,21 @@ ORDER BY cantidad desc""")
         # we need to have a vertical view
         scrollbar.config(command=listbox.yview)
 
-        root.mainloop()
-
     def directorView():
-        # Creating the root window
-        root = Tk(className="Result")
-
+        # Clears possible listbox and scrollbar
+        lista = []
+        for widget in root.winfo_children():
+            lista.append(widget)
+        if(len(lista) > 5):
+            lista[5].destroy()
+            lista[6].destroy()
         # Creating a Listbox and
         # attaching it to root window
         listbox = Listbox(root, width=40, height=20)
 
         # Adding Listbox to the left
         # side of root window
-        listbox.pack(side=LEFT, fill=BOTH)
+        listbox.grid(row=2, column=2, rowspan=5)
 
         # Creating a Scrollbar and
         # attaching it to root window
@@ -265,7 +274,7 @@ ORDER BY cantidad desc""")
 
         # Adding Scrollbar to the right
         # side of root window
-        scrollbar.pack(side=RIGHT, fill=BOTH)
+        scrollbar.grid(row=2, column=3, sticky="ns", rowspan=5)
 
         # Fetch results from DB
         results = searchHandler("""SELECT COUNT(Id) as cantidad, Director
@@ -291,8 +300,6 @@ ORDER BY cantidad desc""")
         # to listbox.yview method its yview because
         # we need to have a vertical view
         scrollbar.config(command=listbox.yview)
-
-        root.mainloop()
 
 
 def UGUI():
