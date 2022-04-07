@@ -1,5 +1,4 @@
 import sqlite3
-import time
 import tkinter as tk
 from tkinter import *
 
