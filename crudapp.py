@@ -3,30 +3,44 @@ import tkinter as tk
 from tkinter import *
 
 
-def queryHandler(request):
+def searchHandler(request):
+    # Connects to DB
     sqliteConnection = sqlite3.connect('hwood.db')
     cursor = sqliteConnection.cursor()
-    print("Database created and Successfully Connected to SQLite")
+    # Print statement and execution
+    print("-----------------------------Executing search on hwood.db\n" + request)
     cursor.execute(request)
     records = cursor.fetchall()
+    if len(records) != 0:
+        print("Records found: " + str(len(records)))
+    else:
+        print("No records found")
     cursor.close()
     if sqliteConnection:
         sqliteConnection.close()
-        print("The SQLite connection is closed")
-        return records
+        print("-----------------------------DB Disconnected")
+    # Returning results (can be empty array)
+    return records
 
 
-def insertHandler(request):
+def modifyHandler(request):
+    # Connects to DB
     sqliteConnection = sqlite3.connect('hwood.db')
     cursor = sqliteConnection.cursor()
-    print("DB Connected --------------------------------")
+    # Print statement and execution
+    print("-----------------------------Executing " +
+          request.split()[0] + " on hwood.db\n" + request)
     cursor.execute(request)
     sqliteConnection.commit()
-    print("Record inserted/deleted successfully ", cursor.rowcount)
+    if (cursor.rowcount != 0):
+        print("Record inserted/deleted/updated successfully ", cursor.rowcount)
+    else:
+        print("Record NOT inserted/deleted/updated")
     cursor.close()
     if sqliteConnection:
         sqliteConnection.close()
-        print("DB Disconnected -----------------------------")
+        print("-----------------------------DB Disconnected")
+    return cursor.rowcount != 0
 
 
 def main():
@@ -84,10 +98,9 @@ def CGUI():
     ent_director = tk.Entry()
     ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Create", command=lambda: [insertHandler(
+    btn_create = tk.Button(text="Create", command=lambda: [modifyHandler(
         f"""INSERT INTO Movies (Id, Title, \"Character\", Premiere, Director)
-        VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}',
-        '{ent_premiere.get()}', '{ent_director.get()}')"""),
+VALUES ({ent_id.get()}, '{ent_title.get()}', '{ent_character.get()}', '{ent_premiere.get()}', '{ent_director.get()}')"""),
         ent_id.delete(0, 100), ent_title.delete(0, 100),
         ent_character.delete(0, 100), ent_premiere.delete(0, 100),
         ent_director.delete(0, 100)])
@@ -136,7 +149,7 @@ def RGUI():
         scrollbar.pack(side=RIGHT, fill=BOTH)
 
         # Fetch results from DB
-        results = queryHandler("""SELECT *FROM Movies m """)
+        results = searchHandler("""SELECT *FROM Movies m """)
 
         # Insert elements into the listbox
         line = "  ", "Id", " " * (4-2), "Title", " " * (42-5), "Character", " " * (
@@ -180,7 +193,7 @@ def RGUI():
         scrollbar.pack(side=RIGHT, fill=BOTH)
 
         # Fetch results from DB
-        results = queryHandler("""SELECT COUNT(Id) as cantidad,strftime('%Y', Premiere) as dat
+        results = searchHandler("""SELECT COUNT(Id) as cantidad,strftime('%Y', Premiere) as dat
 FROM Movies m
 GROUP BY dat
 ORDER BY cantidad desc""")
@@ -227,7 +240,7 @@ ORDER BY cantidad desc""")
         scrollbar.pack(side=RIGHT, fill=BOTH)
 
         # Fetch results from DB
-        results = queryHandler("""SELECT COUNT(Id) as cantidad, Director
+        results = searchHandler("""SELECT COUNT(Id) as cantidad, Director
 FROM Movies m
 GROUP BY Director
 ORDER BY cantidad desc""")
@@ -283,7 +296,7 @@ def UGUI():
     btn_create.grid(column=0, row=5, columnspan=2)
 
     def verify(type, check):
-        search = queryHandler(
+        search = searchHandler(
             f"""Select * FROM Movies WHERE {type} = '{check}'""")
         if (len(search) != 0):
             update(search[0], type, check)
@@ -329,7 +342,7 @@ def UGUI():
         ent_director.insert(END, search[4])
         ent_director.grid(column=1, row=6, padx=10, sticky="w")
 
-        btn_update = tk.Button(text="Update", command=lambda: [insertHandler(
+        btn_update = tk.Button(text="Update", command=lambda: [modifyHandler(
             f"""UPDATE Movies 
 SET Title = '{ent_title.get()}',
 "Character" = '{ent_character.get()}',
@@ -353,7 +366,7 @@ def DGUI():
     ent_id = tk.Entry()
     ent_id.grid(column=1, row=2, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Delete by Id", command=lambda: [insertHandler(
+    btn_create = tk.Button(text="Delete by Id", command=lambda: [modifyHandler(
         f"""DELETE FROM Movies WHERE Id = {ent_id.get()}"""), ent_id.delete(0, 100)])
     btn_create.grid(column=0, row=3, columnspan=2)
 
@@ -362,7 +375,7 @@ def DGUI():
     ent_title = tk.Entry()
     ent_title.grid(column=1, row=4, padx=10, sticky="w")
 
-    btn_create = tk.Button(text="Delete by Title", command=lambda: [insertHandler(
+    btn_create = tk.Button(text="Delete by Title", command=lambda: [modifyHandler(
         f"""DELETE FROM Movies WHERE Title = '{ent_title.get()}'"""), ent_title.delete(0, 100)])
     btn_create.grid(column=0, row=5, columnspan=2)
 
